@@ -1,0 +1,15 @@
+﻿{
+  "name": "debtlens",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run frontend\"",
+    "server": "node backend/server.js",
+    "frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "node backend/server.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

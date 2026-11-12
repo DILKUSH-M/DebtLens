@@ -1,0 +1,36 @@
+name: DebtLens analysis
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run DebtLens analysis
+        env:
+          DEBTLENS_API_URL: ${{ secrets.DEBTLENS_API_URL }}
+          DEBTLENS_API_TOKEN: ${{ secrets.DEBTLENS_API_TOKEN }}
+        run: |
+          if [ -z "$DEBTLENS_API_URL" ]; then
+            echo "DebtLens API is not configured; skipping analysis."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error \
+            --request POST "$DEBTLENS_API_URL/api/analyses" \
+            --header "Authorization: Bearer $DEBTLENS_API_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data "{\"repository\":\"${GITHUB_REPOSITORY}\",\"branch\":\"${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}\"}" \
+            --output debtlens-analysis.json
+      - name: Upload analysis result
+        if: hashFiles('debtlens-analysis.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: debtlens-analysis
+          path: debtlens-analysis.json
